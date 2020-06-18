@@ -1,0 +1,69 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+  <title>{{ title }}</title> 
+  <meta charset="utf-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1"> 
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"> 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script> 
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+
+
+  
+ 
+    <style> 
+    .fakeimg { 
+      height: 200px; 
+      background: #aaa; 
+    } 
+    </style> 
+    {% load static %} 
+    <link rel="stylesheet" type="text/css" href="{% static 'site.css' %}" /> 
+    <script src="{% static 'cm.js' %}"></script>  
+    
+  </head>
+  <body>
+    
+    <div class="jumbotron text-center" style="margin-bottom:0"> 
+      <h1>My First Bootstrap 4 Page</h1>
+      <p>Resize this responsive page to see the effect!</p> 
+    </div>
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark"> 
+      <a class="navbar-brand" href="#">HOME</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsib 
+leNavbar">
+       <span class="navbar-toggler-icon"></span> 
+      </button>
+      <div class="collapse navbar-collapse" id="collapsibleNavbar"> 
+       <ul class="navbar-nav">
+          <li class="nav-item"> <a class="nav-link" href="/fapp/message/">빈도수</a></li> 
+          <li class="nav-item">  <a class="nav-link" href="{% url 'date' %}">DATE</a></li> 
+          <li class="nav-item"> <a class="nav-link" href="{% url 'time' %}">TIME</a></li>
+          <li class="nav-item"> <a class="nav-link" href="/fapp/mask/">공적마스크</a></li>         
+          <li class="nav-item"> <a class="nav-link" href="/fapp/message/">빈도수</a></li>
+          <li class="nav-item"> <a class="nav-link" href="{% url 'message_graph_pie' %}">그래프</a></li>
+          <li class="nav-item"> <a class="nav-link" href="/fapp/graph_pie/">그래프테스트</a></li>
+          <li class="nav-item"> <a class="nav-link" href="/fapp/page_move1/">페이지이동</a></li>
+          <li class="nav-item"> <a class="nav-link" href="/fapp/page_class/">클래스테스트</a></li>
+          <li class="nav-item"> <a class="nav-link" href="{% url 'page_class' %}">클래스테스트1</a></li>
+          <li class="nav-item"> <a class="nav-link" href="{% url 'page_class_mp' %}">다중상속클래스</a></li>
+          <li class="nav-item"> <a class="nav-link" href="{% url 'page_inserface_mp' %}">인터페이스</a></li>
+          <li class="nav-item"> <a class="nav-link" href="{% url 'go_login' %}">로그인</a></li>
+          <li class="nav-item"> <a class="nav-link" href="{% url 'go_juso' %}">주소검색</a></li>
+          <li class="nav-item"> <a class="nav-link" href="/fapp/world_view/">WR</a></li>
+          <li class="nav-item"> <a class="nav-link" href="{% url 'go_gmean' %}">머신러닝</a></li>
+          <li class="nav-item"> <a class="nav-link" href="{% url 'go_deviation' %}">머신러닝</a></li>
+       </ul> 
+      </div>  
+    </nav> 
+    <div class="container" style="margin-top:30px"> 
+      <div class="row">
+       <div class="col-sm-12"> 
+            <!-- 페이지 영역 --> 
+            {% block content %}{% endblock %} 
+       </div></div></div> 
+    <div class="jumbotron text-center" style="margin-bottom:0"> 
+      <p>ALL RIGHT RESERVED SMILE Y.</p> 
+    </div></body></html>

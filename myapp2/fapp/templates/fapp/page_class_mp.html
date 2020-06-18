@@ -1,0 +1,13 @@
+{% extends "fapp/layout.html" %}
+{% block content %}
+<form name="frmSearch" method="GET" action="loginProces">
+<!-- 1. 분류제목 -->
+<div class="row p-1">
+    <div class="col-sm-12 text-center">
+      <h2 for="vFamily">{{ vFamily }} </h2>
+      <h2 for="testChildMParent">{{ testChildMParent }} </h2>
+      <h2 for="testParent">{{ testParent }} </h2>
+      <h2 for="testOtParent">{{ testOtParent }} </h2>
+ </div>
+</div>
+{% endblock %}

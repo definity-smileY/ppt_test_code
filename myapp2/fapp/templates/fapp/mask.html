@@ -1,0 +1,120 @@
+{% extends "fapp/layout.html" %}
+{% block content %}
+<form method="GET">
+<!-- 1. 분류제목-->
+<div class="row p-1">
+    <div class="col-sm-12 text-center">
+      <h2 for="f_title">공적마스크 재고 검색 </h2>
+    </div>
+</div>
+<!--2. 분류제목 -->
+<div class="row p-1">
+  <div class="col-sm-2 text-right">
+    <div class="form-group text-right">
+      <select class="form-control" id="yselClass" name="yselClass" style="width: 150px;">
+        <option value="#">지역선택</option>
+        <option value="서울특별시">서울특별시</option>
+        <option value="경기도">경기도</option>
+        <option value="충청남도">충청남도</option>
+      </select>
+    </div> 
+  </div>
+  <div class="col-sm-4 text-left"><input required="required" type="text"    class="form-control" id="ytxtColname" name="ytxtColname" placeholder="데이터가 저장될 컬레션이름을 써주세요" name="ytxtColname">
+  </div>
+  <div class="col-sm-4 text-left"><button type="button" class="btn btn-primary" onclick="doAjax(this.form,'yselClass', 'ytxtColname')">검색</button>
+  </div>
+
+</div>
+</form>
+
+<div class="row p-1 text-center">
+    <div class="col-sm-12 text-center">
+    <br/><h3>- 조회목록 - </h3>
+    <table class="table table-striped ">
+      <thead>
+        <tr>
+          <th>번호</th>
+          <th>지역</th>
+          <th>코드번호</th>
+          <th>생성일</th>
+          <th>위도</th>
+          <th>경도</th>
+          <th>약국이름</th>
+          <th>수량</th>
+          <th>입고일</th>  
+        </tr>
+      </thead>
+      <tbody id="tbos">
+      </tbody>
+    </table>  
+    </div>
+</div>
+<script>
+  // 셀렉트 선택시 kClass변수에 드롭다운값을 할당
+  kClass_v = null;
+
+  // 검색버튼을 누루면 내용을 서버에 전송
+  function doAjax(pFrm, kClass, ytxtColname){
+    alert($('#yselClass').val());
+    alert($('#ytxtColname').val());
+
+    $.ajax({
+      url:"http://192.168.0.35:8000/fapp/mask2/",
+      type: "GET",
+      data: {
+        'yselClass': $('#yselClass').val(), 
+        'ytxtColname': $('#ytxtColname').val(), 
+      },
+      dataType: 'json',
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      dataType: "text",
+      
+      success:function(data){
+        alert(data);
+        // 데이터 청결화
+        for(i=0; i < data.length; i++){
+          data = data.replace("{", '').replace("stores",'').replace(":",'')
+          .replace("[", '').replace("{", '').replace("}", '')
+          .replace("]", '').replace('}', '').replace('"','').replace('"','').replace("count",'').replace("addr",'').replace("code",'')
+          .replace("created_at",'').replace("lat",'').replace("lng",'').replace("name",'').replace("remain_stat",'').replace("stock_at",'')
+          .replace("type",'').replace("01",'');
+        }
+        
+        data = data.split(',');
+        alert(data);
+        tbos = $("#tbos");
+        $("#tbos tr").remove();
+        data.splice(0,1);
+        data.splice(0,1);
+        j = 1;
+        for(i=0; i<data.length; i=i+7){
+          tbos.append("<tr><td>"+ j++ 
+            +"</td><td>"+ data[i] 
+            +"</td><td>"+ data[i+1] 
+            +"</td><td>"+ data[i+2]
+            +"</td><td>"+ data[i+3]
+            +"</td><td>"+ data[i+4]
+            +"</td><td>"+ data[i+5]
+            +"</td><td>"+ data[i+6]
+            +"</td><td>"+ data[i+7]
+            +"</td></tr>");
+          
+        }
+      }
+    });
+  }
+</script>
+<!-- 페이지 이동 -->
+<div class="row p-1 text-center">
+    <div class="col-sm-4 text-center"></div>
+    <div class="col-sm-4 text-center">
+        <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            <li class="page-item"><a class="page-link"> | HERE | </a></li>
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+          </ul>
+    </div>
+    <div class="col-sm-4 text-center"></div>     
+</form> 
+{% endblock %}
+

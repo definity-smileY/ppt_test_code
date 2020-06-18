@@ -1,0 +1,6 @@
+{% extends "fapp/layout.html" %}
+{% block content %}
+<h2 class="message">{{ date | date:'m월 d일' }}</h2>
+<h5>Title description, Dec 7 , 2017</h5>
+<p>{{ content }}</p>
+{% endblock %}

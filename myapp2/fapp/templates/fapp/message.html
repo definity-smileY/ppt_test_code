@@ -1,0 +1,99 @@
+{% extends "fapp/layout.html" %}
+{% block content %}
+<form method="GET">
+<!-- 1. 분류제목-->
+<div class="row p-1">
+    <div class="col-sm-12 text-center">
+      <h2 for="f_title">온라인 주제별 키워드 검색 ( 빈도수 분석기 ) </h2>
+    </div>
+</div>
+<!--2. 분류제목 -->
+<div class="row p-1">
+  <div class="col-sm-2 text-right"></div>
+  <div class="col-sm-2 text-right">
+    <div class="form-group text-right">
+      <select class="form-control" id="selClass" name="selClass" style="width: 150px;">
+        <option value="#">검색매체선택</option>
+        <option value="정치">정치</option>
+        <option value="경제">경제</option>
+        <option value="문화">문화</option>
+      </select>
+    </div> 
+  </div>
+  <div class="col-sm-4 text-left"><input required="required" type="text"    class="form-control" id="txtColname" name="txtColname" placeholder="데이터가 저장될 컬레션이름을 써주세요" name="txtColname">
+  </div>
+  <div class="col-sm-4 text-left"><button type="button" class="btn btn-primary" onclick="doAjax(this.form,'selClass', 'txtColname')">검색</button>
+  </div>
+
+</div>
+
+</form>
+
+<div class="row p-1 text-center">
+    <div class="col-sm-12 text-center">
+    <br/><h3>- 조회목록 - </h3>
+    <table class="table table-striped ">
+      <thead>
+        <tr>
+          <th>순위</th>
+          <th>키워드</th>
+          <th>빈도수</th>
+        </tr>
+      </thead>
+      <tbody id="tbos">
+        
+      </tbody>
+    </table>  
+    </div>
+</div>
+<script>
+  // 셀렉트 선택시 kClass변수에 드롭다운값을 할당
+  kClass_v = null;
+
+  // 검색버튼을 누루면 내용을 서버에 전송
+  function doAjax(pFrm, kClass, txtColname){
+    alert($('#selClass').val());
+    alert($('#txtColname').val());
+
+    $.ajax({
+      url:"http://192.168.0.35:8000/fapp/message2/",
+      type: "GET",
+      data: {
+        'selClass': $('#selClass').val(), 
+        'txtColname': $('#txtColname').val(), 
+      },
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      dataType: "text",
+      
+      success:function(data){
+        // 데이터 청결화
+        for(i=0; i<10; i++){
+          data = data.replace("[", '').replace("[", '').replace(" ", '').replace("]", '').replace("]", '')
+        }
+        data = data.split(',');
+        tbos = $("#tbos");
+        $("#tbos tr").remove();
+        j = 1;
+        alert(tbos)
+        for(i=0; i<data.length; i=i+2){
+          tbos.append("<tr><td>"+ j++ +"</td><td>"+ data[i] +"</td><td>"+ data[i+1] +"</td></tr>");
+          // alert(data[i]);alert(data[i+1]);
+        }
+      }
+    });
+  }
+</script>
+<!-- 페이지 이동 -->
+<div class="row p-1 text-center">
+    <div class="col-sm-4 text-center"></div>
+    <div class="col-sm-4 text-center">
+        <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            <li class="page-item"><a class="page-link"> | HERE | </a></li>
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+          </ul>
+    </div>
+    <div class="col-sm-4 text-center"></div>     
+</form> 
+{% endblock %}
+

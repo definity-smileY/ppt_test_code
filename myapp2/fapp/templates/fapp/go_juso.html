@@ -1,0 +1,79 @@
+{% extends "fapp/layout.html" %}
+{% block header  %}
+<div class="row p-1">
+  <div class="col-sm-1 text-right"></div>
+  <div class="col-sm-10 text-center">
+    {% csrf_token %}
+    <h2 for="title">{{ title }} </h2>
+    <h4 for="message">{{ message  }} </h4>
+  </div>
+</div>
+{% endblock %}
+{% block content  %}
+<form method="post"action="http://192.168.0.35:8000/fapp/go_juso/" novalidate>
+<div class="row p-1 text-center">
+  <div class="col-sm-1 text-right"></div>
+  <div class="col-sm-9 text-right">
+    {% csrf_token %}
+    <table class="table table-striped ">{{ jf_.as_table }}</table>
+ </div>
+  <div class="col-sm-2 text-left">
+    <button type="button" class="btn btn-primary"  onclick="doAjax()">조회</button>
+    <button type="button" class="btn btn-primary"  onclick="doSend(this.form)">전송</button>
+  </div>
+</div>
+<div class="row p-1 text-center"><div class="col-sm-12 text-center"></div></div>  
+</form>
+<!-- 검색쿼리 -->
+<script>
+  $("#id_state").attr('class','form-control');
+  // 폼을 포스트로 전송
+  function doSend(pFrm){
+      alert($("#id_state option:selected").text());
+      $("#id_state_val").val($("#id_state option:selected").text()); 
+      alert(pFrm);
+      $("#id_state option").remove();
+      $("#id_state").append("<option value='1'>1</option>");
+      $(pFrm).submit();
+  }
+  // 검색버튼을 누루면 내용을 서버에 전송
+  function doAjax(){
+   // 동/구 입력확인
+    id_juso =  $('#id_juso').val();
+    if ( id_juso == null || id_juso == ""){
+      alert("주소검색어를 입력해 주세요!");
+      $('#id_juso').focus()
+      return;
+    } 
+    id_juso = id_juso.replace("구", "").replace("동", "");
+    $.ajax({
+      url:"http://192.168.0.35:8000/fapp/go_juso_proc/",
+      type: "GET",
+      data: {
+        'pKey': id_juso
+      },
+      dataType: 'json',
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      dataType: "text",
+      
+      success:function(data){
+        // 전송데이터 다듬기
+        for(i=0; i<10; i++){
+          data = data.replace("[", '').replace("[", '').replace(" ", '').replace("]", '').replace("]", '').replace('"', '').replace('"', '')
+        }
+        data = data.split("','");
+        // alert(data[0])
+        data = data[0].split(",");
+        // select에 옵션추가
+        alert(data.length);
+        id_state = $("#id_state");
+        $("#id_state option").remove();
+        for(i=0; i<data.length; i++){
+          id_state.append("<option value='"+ i +"'>"+data[i]+"</option>");
+        }
+
+      }
+    });
+  }
+</script>
+{% endblock %} 

@@ -1,0 +1,167 @@
+{% extends "fapp/layout.html" %}
+{% block header  %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+
+<div class="row p-1">
+  <div class="col-sm-1 text-right"></div>
+  <div class="col-sm-10 text-center">
+    {% csrf_token %}
+    <h2 for="title">{{ title }} </h2>
+    <h4 for="message">{{ message  }} </h4>
+  </div>
+</div>
+{% endblock %}
+{% block content  %}
+<!-- 1. 주제 -->
+<form method="post" action="#" novalidate>
+  
+<div class="row p-1 text-center">
+  <div class="col-sm-1 text-right"></div>
+  <div class="col-sm-7 text-right">
+    {% csrf_token %}
+    <table class="table table-striped ">{{ mf_.as_table }}</table>
+ </div>
+  <div class="col-sm-4 text-left">
+    <div class="row p-1 text-center">
+      <div class="col-sm-8 text-right">
+        <button type="button" class="btn btn-primary"  onclick="go_deviation_save()">생성 / 저장 / 처리 / 분석</button>
+      </div>
+      <div class="col-sm-3 text-left"></div>
+    </div>
+</form>
+</div>
+
+</div>
+<div class="row p-1 text-center"> <div class="col-sm-12 text-center"></div><h3 style="text-align:center; width:100%; text-decoration: underline">분석 결과</h3></div>
+<div class="row p-1 text-center"> <div class="col-sm-3 text-left"></div><div class="col-sm-9 text-left">
+  <ul style="color: red;">
+    <li><h5>월급여가 제일 안정적인 사람 : <label id="deviationvminman"></label></h5></li>
+    <li><h5>월급여가 제일 불안정한 사람 : <label id="deviationvmaxman"></label> </h5></li>
+</h5></li>
+      <li><h5>편차  : 전체값에서 하나의 값과 전체값에 대한 평균값을 뺀값 ( 값하나-전체평균값)
+      </h5>
+      <h5>표준편차  : 편차를 제곱했다가 제곱근으로 나눈 절대값
+      </h5>
+    </li>
+      </ul>
+  <h4></h4>
+  <h4></h4>
+  <h4></h4>
+  <h4></h4>
+</div><div class="col-sm-3 text-left"></div></div>
+<div class="row p-1 text-center">
+
+
+<!-- 통계결과 -->
+<div class="col-sm-4 text-center">
+  <table class="table table-striped ">
+    <caption style="text-align:center;">분석결과</caption>
+    <thead>
+      <tr>
+        <th>회사이름</th>
+        <th>이름</th>
+        <th>급여평균</th>
+        <th>표준편차</th>
+      </tr>
+    </thead>
+    <tbody id="tbos">
+    </tbody>
+  </table>  
+</div>
+
+<!-- 그래프 -->
+<div class="col-sm-8 text-center">
+      <!-- 파이그래프 시작 -->
+  <table class="table table-striped ">
+      <tbody id="tbos2" >
+        <tr><td>
+        <div id="chartid" >
+          <canvas id="pie-chart" style="width: 100%; height: 700px; text-align: center; "></canvas>
+        </div>
+        </td></tr>  
+      </tbody>
+    </table>
+    <!-- 파이그래프 끝 -->
+</div>
+</div>
+</div>
+
+<script>
+  // 검색버튼을 누루면 내용을 서버에 전송 : 수집/저장
+  function go_deviation_save(){
+   //alert('go_gmean_save 실행');
+   // 동/구 입력확인
+   id_theme =  $('#id_theme').val();
+   alert(id_theme);
+   // 데이터가 없는 경우 포커싱
+    if ( id_theme == null || id_theme == ""){
+      $('#id_theme').focus()
+      return;
+    } 
+    // 에이작스
+    $.ajax({
+      url:"http://192.168.0.35:8000/fapp/go_deviation_save/",
+      type: "GET",
+      data: {
+        'id_theme': id_theme
+      },
+      dataType: 'json',
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      dataType: "text",
+      
+      success:function(data){
+        // 초기
+        pjson = JSON.parse(data);
+        
+        // 분석결과
+        deviationvminman = "";
+        $("#deviationvminman").text(pjson[1]['name'].toString()  + "(월평균 수입:"+  pjson[1]['meanv'].toString() + "만원, 월간 편차 :"+ pjson[1]['deviationv'].toString() +"만원)");
+        // 급여가 제일 불안정적인 사람
+        console.log(pjson[2]);
+        $("#deviationvmaxman").text(pjson[2]['name'].toString()+ "(월평균 수입:"+  pjson[2]['meanv'].toString() + "만원, 월간 편차 :"+ pjson[2]['deviationv'].toString() +"만원)");
+
+
+        // 급여가 제일 안정적인 사람
+        ele = pjson[0];
+        theme  = $('theme').text();
+        tbos = $("#tbos");
+        tbos.empty();
+        // 그래프 / 분석표
+        labels_ = [];   // 라벨
+        data_ = [];   // 값
+        i = 0;
+        ele.forEach(ee => {
+          console.log(ee['name']);
+          labels_[i] = ee['name'];
+          data_ [i] = ee['deviationv'];
+          tbos.append("<tr><td>"+id_theme+"</td><td>"+ ee['name'] +"</td><td>"+ ee['meanv'] +"</td>"+"<td>"+ ee['deviationv'] +"</td></tr>"); 
+          i++;         
+        });
+
+        // 그래프 설정
+        var config = {
+          type: 'bar',
+          data: {
+            datasets: [{
+              data: data_,
+              backgroundColor: [
+              'red', 'gold', 'green', 'blue', 'orange','#696969', '#808080', '#A9A9A9', '#C0C0C0', '#D3D3D3' 
+              ],
+              label: "급여표준편차"
+            }],
+            labels: labels_
+          },
+          options: {
+            responsive: true
+          }
+        };
+        // 
+        var ctx = document.getElementById('pie-chart').getContext('2d');
+        // ctx=차트출력, config=차트설정
+        new Chart(ctx, config).update();
+
+      }
+    });
+  }
+</script>
+{% endblock %} 

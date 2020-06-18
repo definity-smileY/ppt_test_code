@@ -1,0 +1,10 @@
+{% extends "fapp/layout.html" %}
+{% block content %}
+<!-- 1. 분류제목-->
+<div class="row p-1">
+    <div class="col-sm-12 text-center">
+      <h2 for="f_title">공적마스크 재고지도</h2>
+    </div>
+</div>
+{{ map|safe }}
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "fapp/layout.html" %}
+{% block content  %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+<form method="GET">
+  <!-- 1. 분류제목-->
+  <div class="row p-1">
+    <div class="col-sm-12 text-center">
+      <h2 for="f_title">공적마스크 재고 검색 </h2>
+    </div>
+  </div>
+  <!--2. 분류제목 -->
+  <div class="row p-1">
+    <div class="col-sm-2 text-right">
+      <div class="form-group text-right">
+        <select class="form-control" id="selChart" name="selChart" style="width: 150px;">
+          <option value="bar">바차트</option>
+          <option value="line">라인차트</option>
+          <option value="radar">레이다</option>
+          <option value="pie">파이차트</option>
+          <option value="polarArea">폴라에어리어</option>
+          <option value="doughnut">도넛</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-sm-2 text-right">
+      <div class="form-group text-right">
+        <select class="form-control" id="yselClass" name="yselClass" style="width: 150px;">
+          <option value="#">지역선택</option>
+          <option value="서울특별시">서울특별시</option>
+          <option value="경기도">경기도</option>
+          <option value="충청남도">충청남도</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-sm-4 text-left"><input required="required" type="text" class="form-control" id="ytxtColname"
+        name="ytxtColname" placeholder="데이터가 저장될 컬레션이름을 써주세요" name="ytxtColname">
+    </div>
+    <div class="col-sm-4 text-left"><button type="button" class="btn btn-primary"
+        onclick="doAjax(this.form,'yselClass', 'ytxtColname')">검색</button>
+    </div>
+
+  </div>
+</form>
+
+<div class="row p-1 text-center">
+  <div class="col-sm-12 text-center">
+    <br />
+    <h3>- 조회목록 - </h3>
+    <table class="table table-striped ">
+      <thead>
+        <tr>
+          <th>번호</th>
+          <th>지역</th>
+          <th>약국이름</th>
+          <th>수량</th>
+        </tr>
+      </thead>
+      <tbody id="tbos">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<div class="row p-1 text-center">
+  <div class="col-sm-12">
+    <!-- 파이그래프 시작 -->
+    <h2>그래프폼</h2>
+    <tbody id="tbos2">
+      <tr>
+        <td>
+          <div id="chartid" style="width: 100%; text-align: center; ">
+            <canvas id="pie-chart"></canvas>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+
+    <!-- 파이그래프 끝 -->
+  </div>
+</div>
+
+<script>
+  // 셀렉트 선택시 kClass변수에 드롭다운값을 할당
+  kClass_v = null;
+
+  // 검색버튼을 누루면 내용을 서버에 전송
+  function doAjax(pFrm, kClass, ytxtColname) {
+    alert($('#yselClass').val());
+    alert($('#ytxtColname').val());
+
+    $.ajax({
+      url: "http://192.168.0.35:8000/fapp/mask2/",
+      type: "GET",
+      data: {
+        'yselClass': $('#yselClass').val(),
+        'ytxtColname': $('#ytxtColname').val(),
+      },
+      dataType: 'json',
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+
+      success: function (data) {
+        for(i=0; i < data.length; i++){
+        //   // data = data.replace("plenty",makerandom("plenty")).replace("some",makerandom("some")).replace("few",makerandom("few")).replace("empty",makerandom("empty"))
+          data = data.replace("plenty",100).replace("some",50).replace("few",20).replace("break",5).replace("null",2)
+          .replace("empty",1).replace("undefined",3).replace("NaN",7).replace("undefi","").replace("ned",9)
+        }
+        data = JSON.parse(data)
+        
+        // remain_stat : none, empty, few, some, plenty
+        // empty : 회색(0~1개)/few:빨강색(2~29개)/
+        // some: 노랑색(30~99개)/ plenty: 녹색 (100개이상)
+        tbos = $("#tbos");
+        $("#tbos tr").remove();
+
+        // 그래프
+        labels_ = [] //라벨
+        datas = [] // 값
+        j = 0
+        
+        for (i = 0; i < 11; i++) {
+          tbos.append("<tr><td>" + j++
+            + "</td><td>" + data[i].addr
+            + "</td><td>" + data[i].name
+            + "</td><td>" + data[i].remain_stat
+            + "</td></tr>");
+          labels_.push(data[i].name)
+          datas.push(data[i].remain_stat)
+        }
+
+        alert(datas)
+        alert(labels_)
+
+        //그래프설정
+        var config = {
+          type: $("#selChart").val(),
+          data: {
+            datasets: [{
+              data: datas,
+              backgroundColor: [
+                'red', 'gold', 'green', 'blue', 'orange', '#696969', '#808080', '#A9A9A9', '#C0C0C0', '#D3D3D3'
+              ],
+              label: "검색결과"
+            }],
+            labels: labels_
+          },
+          options: {
+            responsive: true
+          }
+
+        };
+        //
+        var ctx = document.getElementById('pie-chart').getContext('2d');
+        //
+        new Chart(ctx, config).update();
+
+      }
+    });
+  }
+</script>
+{% endblock %}

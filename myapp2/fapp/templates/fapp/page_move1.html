@@ -1,0 +1,164 @@
+{% extends "fapp/layout.html" %}
+{% block content  %}
+<form name="frmSearch" method="GET" action="loginProces">
+<!-- 1. 분류제목 -->
+<div class="row p-1">
+    <div class="col-sm-12 text-center">
+      <h2 for="f_title">온라인 주제별 키워드 검색 ( 목록 다음목록페이지로 이동 ) </h2>
+    </div>
+</div>
+<!--2. 분류제목 -->
+<div class="row p-1">
+  <div class="col-sm-2 text-right"></div>
+  <div class="col-sm-2 text-right">
+    <div class="form-group text-right">
+      <select class="form-control" id="selClass" name="selClass" style="width: 150px;">
+        <option value="#">검색매체선택</option>
+        <option value="정치">정치</option>
+        <option value="경제">경제</option>
+        <option value="문화">문화</option>
+      </select>
+    </div> 
+  </div>
+  <div class="col-sm-4 text-left"><input required="required" type="text"    class="form-control" id="txtColname" name="txtColname" placeholder="컬렉션저장은 잠시 쉽니다. " name="txtColname" value="abc">
+  </div>
+  <div class="col-sm-4 text-left"><button type="button" class="btn btn-primary" onclick="doAjax(this.form,'selClass', 'txtColname')">검색</button>
+  </div>
+
+</div>
+</form>
+
+<div class="row p-1 text-center">
+    <div class="col-sm-12 text-center">
+    <br/><h3>- 조회목록 - </h3>
+    <table class="table table-striped ">
+      <thead>
+        <tr>
+          <th>순위</th>
+          <th>키워드</th>
+          <th>빈도수</th>
+        </tr>
+      </thead>
+      <tbody id="tbos">
+        
+      </tbody>
+    </table>  
+    </div>
+</div>
+<script>
+  // 셀렉트 선택시 kClass변수에 드롭다운값을 할당
+  kClass_v = null;
+  page_rows = 10;
+  cur_page = 1; // 현재페이지
+  data = []; // 데이터배열
+  dok = "no"; // 
+
+  /* 페이지 처리 */
+  function doPaging(data, pnum){
+    // 페이지의 시작행.
+    i_ = page_rows*(pnum-1);
+    // 데이터 청결화
+    
+    if(dok == "no"){
+        for(i=0; i<50; i++){
+          data = data.replace("[", '').replace("[", '').replace(" ", '').replace("]", '').replace("]", '')
+        }
+          // alert(data);
+          data = data.split(',');
+          tbos = $("#tbos");
+          $("#tbos tr").remove();
+        }
+    
+
+    j = i_+1;
+    // alert(i_)
+    i = i_;
+    len_i =  i_ + 20;
+    tbos.find("tr").remove();     
+    for(i=i_; i<len_i; i=i+2){
+          //alert(i);
+          //alert(len_i);
+          tbos.append("<tr><td>"+ j++ +"</td><td>"+ data[i] +"</td><td>"+ data[i+1] +"</td></tr>");
+          // alert(data[i]);alert(data[i+1]);
+      }
+    // 넥스트 표시여부
+    setNext(data);
+  }
+
+  // next버튼
+  function setNext(data){
+    //alert(data);
+    //alert(cur_page);
+      // 넥스트 표시여부
+      if(cur_page < 6  ){
+        if(cur_page == 5){
+          $("#nextId").removeAttr("href");
+          $("#nextId").off("click");
+          $("#nextId").click(function(){ alert('데이터가 없습니다.');});
+        } else {
+          cur_page++;
+          $("#nextId").attr("href", "#");
+          $("#nextId").off("click");
+          $("#nextId").click(function(){ cur_page++; doPaging(data, cur_page)});
+          setPre(data);
+        }
+     } 
+ }
+  /* 페이지 처리 끝*/
+  // prev버튼
+  function setPre(data){
+    //alert(data);
+      alert(cur_page);
+      // 넥스트 표시여부
+      if(cur_page > 0  ){
+        if(cur_page == 1){
+          $("#prevId").removeAttr("href");
+          $("#prevId").off("click");
+          $("#prevId").click(function(){ alert('데이터가 없습니다.');});
+        } else {
+          $("#prevId").attr("href", "#");
+          $("#prevId").off("click");
+          $("#prevId").click(function(){ cur_page--; doPaging(data, cur_page)});
+        }
+     } 
+ }       
+
+  // 검색버튼을 누루면 내용을 서버에 전송
+  function doAjax(pFrm, kClass, txtColname){
+    alert($('#selClass').val());
+    alert($('#txtColname').val());
+
+    $.ajax({
+      url:"http://192.168.0.35:8000/fapp/page_move1_proc/",
+      type: "GET",
+      data: {
+        'selClass': $('#selClass').val(), 
+        'txtColname': $('#txtColname').val(), 
+      },
+      dataType: 'json',
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      dataType: "text",
+      
+      success:function(pdata){
+        /* 페이지 처리 */
+        doPaging(pdata,1);
+        dok = "yes";
+        
+        /* 페이지 처리 끝*/
+      }
+    });
+  }
+</script>
+<!-- 페이지 이동 -->
+<div class="row p-1 text-center">
+    <div class="col-sm-4 text-center"></div>
+    <div class="col-sm-4 text-center">
+        <ul class="pagination">
+          <li class="page-item"><a class="page-link" id="prevId">Previous</a></li>
+          <li class="page-item"><a class="page-link"> | HERE | </a></li>
+          <li class="page-item"><a class="page-link" id="nextId">Next</a></li>
+       </ul>
+    </div>
+    <div class="col-sm-4 text-center"></div>     
+</form> 
+{% endblock %}

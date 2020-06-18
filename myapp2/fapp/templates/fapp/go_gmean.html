@@ -1,0 +1,232 @@
+{% extends "fapp/layout.html" %}
+{% block header  %}
+
+<div class="row p-1">
+  <div class="col-sm-1 text-right"></div>
+  <div class="col-sm-10 text-center">
+    {% csrf_token %}
+    <h2 for="title">{{ title }} </h2>
+    <h4 for="message">{{ message  }} </h4>
+  </div>
+</div>
+{% endblock %}
+{% block content  %}
+<!-- 1. 주제 -->
+<form method="post" action="#" novalidate>
+  
+<div class="row p-1 text-center">
+  <div class="col-sm-1 text-right"></div>
+  <div class="col-sm-9 text-right">
+    {% csrf_token %}
+    <table class="table table-striped ">{{ mf_.as_table }}</table>
+ </div>
+  <div class="col-sm-2 text-left">
+    <div class="row p-1 text-center">
+      <div class="col-sm-12 text-left">
+        <button type="button" class="btn btn-primary"  onclick="go_gmean_save()">수집 / 저장</button>
+      </div>
+    </div>
+    <div class="row p-1 text-center">
+      <div class="col-sm-12 text-left"><br />
+        <button type="button" class="btn btn-primary"  onclick="go_gmean_proc(this.form)">처리 / 분석</button>
+      </div>
+    </div>  
+</form>
+</div>
+
+</div>
+<div class="row p-1 text-center"> <div class="col-sm-12 text-center"></div><h3 style="text-align:center; width:100%; text-decoration: underline">분석 결과</h3></div>
+<div class="row p-1 text-center"> <div class="col-sm-3 text-left"></div><div class="col-sm-6 text-left">
+  <ul style="color: red;">
+    <li><h5>평균값 : <label id="lblMean"></label></h5></li>
+    <li><h5>상위 10 전체빈도수 합 : <label id="lblsum"></label></h5></li>
+    <li><h53>평균값보다 빈도수가 큰 단어들 : <label id="lblgoodWords"></label> </h5></li>
+    <li><h5>평균값보다 큰 도큐먼트 추출식 : y > 평균</h5></li>
+    <li><h5>상위 10개의 평균값 :  10개의합계/10 </h5></li>
+  </ul>
+  <h4></h4>
+  <h4></h4>
+  <h4></h4>
+  <h4></h4>
+</div><div class="col-sm-3 text-left"></div></div>
+<div class="row p-1 text-center">
+<!-- 통계결과 -->
+<div class="col-sm-4 text-center">
+  <table class="table table-striped ">
+    <caption style="text-align:center;">분석결과</caption>
+    <thead>
+      <tr>
+        <th>순위</th>
+        <th>키워드</th>
+        <th>평균이상여부</th>
+      </tr>
+    </thead>
+    <tbody id="tbos">
+      <td>순위</td>
+      <td>키워드</td>
+      <td>평균이상여부</td>
+    </tbody>
+  </table>  
+</div>
+
+<!-- 그래프 -->
+<div class="col-sm-8 text-center">
+      <!-- 파이그래프 시작 -->
+  <table class="table table-striped ">
+      <tbody id="tbos2" >
+        <tr><td>
+        <div id="chartid" >
+          <canvas id="pie-chart" style="width: 100%; height: 700px; text-align: center; "></canvas>
+        </div>
+        </td></tr>  
+      </tbody>
+    </table>
+    <!-- 파이그래프 끝 -->
+</div>
+</div>
+</div>
+
+<script>
+  $("#id_theme_sel").attr('class','form-control');
+  // 폼을 포스트로 전송
+  function doSend(pFrm){
+      alert($("#id_theme_sel option:selected").text());
+      $("#id_theme_sel_val").val($("#id_theme_sel option:selected").text()); 
+      alert(pFrm);
+      $("#id_theme_sel option").remove();
+      $("#id_theme_sel").append("<option value='1'>1</option>");
+      $(pFrm).submit();
+  }
+  
+  // 검색버튼을 누루면 내용을 서버에 전송 : 수집/저장
+  function go_gmean_save(){
+   //alert('go_gmean_save 실행');
+   // 동/구 입력확인
+   id_theme =  $('#id_theme').val();
+   alert(id_theme);
+    if ( id_theme == null || id_theme == ""){
+      $('#id_theme').focus()
+      return;
+    } 
+
+    $.ajax({
+      url:"http://192.168.0.35:8000/fapp/go_gmean_save/",
+      type: "GET",
+      data: {
+        'id_theme': id_theme
+      },
+      dataType: 'json',
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      dataType: "text",
+      
+      success:function(data){
+        alert(data);
+        // 전송데이터 다듬기
+        for(i=0; i<data.length; i++){
+          data = data.replace("[", '').replace("[", '').replace(" ", '').replace("]", '').replace("]", '').replace('"', '').replace('"', '')
+        }
+        data = data.split("','");
+        // alert(data[0])
+        data = data[0].split(",");
+        // select에 옵션추가
+        alert(data.length);
+        id_theme_sel = $("#id_theme_sel");
+        alert(id_theme_sel)
+        $("#id_theme_sel option").remove();
+        for(i=0; i<data.length; i++){
+          id_theme_sel.append("<option value='"+ data[i] +"'>"+data[i]+"</option>");
+        }
+      }
+    });
+  }
+
+   /* 처리/분석 */
+  // 셀렉트 선택시 kClass변수에 드롭다운값을 할당
+  kClass_v = null;
+
+  // 검색버튼을 누루면 내용을 서버에 전송
+  function go_gmean_proc(pFrm){
+    $.ajax({
+      url:"http://192.168.0.35:8000/fapp/go_gmean_proc/",
+      type: "GET",
+      data: {
+        'id_theme_sel': $('#id_theme_sel option:selected').text(), 
+      },
+      dataType: 'json',
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      dataType: "text",
+      
+      success:function(data){
+        dataj = JSON.parse(data);
+        alert(dataj);
+
+        // 데이터 청결화
+        for(i=0; i<data.length; i++){
+          data = data.replace("[", '').replace("[", '').replace(" ", '').replace("]", '').replace("]", '').replace('""', '')
+        }
+        data = data.split(',');
+        tbos = $("#tbos");
+        $("#tbos tr").remove();
+        j = 1;
+
+        // 평균
+        meanv = data[data.length-2]
+        $("#lblMean").text(meanv);
+        // 합계
+        sumv = data[data.length-1]
+        $("#lblsum").text(sumv);       
+        // 평균값보다 빈도수가 큰 단어들
+        goodwords = [];
+
+        // 그래프
+        labels_ = [];   // 라벨
+        data_ = [];   // 값
+        i = 0
+        for(i=0, j = 0; i<data.length-2; i=i+2){
+          // 평균값보다 빈도수가 큰 단어들
+          console.log("data[i+1].toString() : " + data[i+1].toString());
+          console.log(" meanv  : " +  meanv.toString() );
+          if (Number(data[i+1]) > meanv ) {
+            console.log("========================");
+            console.log(" i  : " + i.toString() );
+            goodwords.push(data[i]);
+            console.log("data[i] : " + data[i]);
+            console.log("goodwords : " +  goodwords.toString());
+          }
+            labels_[j] = data[i];
+            data_[j] = data[i+1];
+            tbos.append("<tr><td>"+ (j+1) +"</td><td>"+ data[i] +"</td><td>"+ data[i+1].toString() +"</td></tr>");
+            j++;
+            // alert(data[i]);alert(data[i+1]);
+        }
+        // 평균값보다 빈도수가 큰 단어들
+        $("#lblgoodWords").text(goodwords.toString());
+
+
+        // 그래프 설정
+        var config = {
+          type: 'doughnut',
+          data: {
+            datasets: [{
+              data: data_,
+              backgroundColor: [
+              'red', 'gold', 'green', 'blue', 'orange','#696969', '#808080', '#A9A9A9', '#C0C0C0', '#D3D3D3' 
+              ],
+              label: "검색결과"
+            }],
+            labels: labels_
+          },
+          options: {
+            responsive: true
+          }
+        };
+        // 
+        var ctx = document.getElementById('pie-chart').getContext('2d');
+        // ctx=차트출력, config=차트설정
+        new Chart(ctx, config).update();
+
+      }
+    });
+  }
+</script>
+{% endblock %}

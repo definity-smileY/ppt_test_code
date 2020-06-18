@@ -1,0 +1,57 @@
+{% extends "fapp/layout.html" %}
+{% block header  %}
+<div class="row p-1">
+  <div class="col-sm-12 text-center">
+    {% csrf_token %}
+    <h2 for="title">{{ title }} </h2>
+    <h4 for="message">{{ message  }} </h4>
+  </div>
+</div>
+{% endblock %}
+{% block content  %}
+<form method="post">
+<div class="row p-1 text-center">
+  <div class="col-sm-4 text-left">
+  </div>
+  <div class="col-sm-4 text-right">
+    {% csrf_token %}
+
+    <table class="table table-striped ">{{ lf.as_table }}</table>
+ </div>
+  <div class="col-sm-4 text-left">
+    <button type="button" class="btn btn-primary"  onclick="doAjax()">등록</button>
+    <button type="button" class="btn btn-primary">로그인</button>
+  </div>
+</div> 
+</form>
+<!-- 로그인 폼 -->
+<script>
+
+  // 검색버튼을 누루면 내용을 서버에 전송
+  function doAjax(){
+   // 아이디 입력확인
+    id_userid =  $('#id_userid').val();
+    if ( id_userid == null || id_userid == ""){
+      alert("아이디를 입력해 주세요!");
+      $('#id_userid').focus()
+      return;
+    } 
+    alert(id_userid);
+ 
+    $.ajax({
+      url:"http://192.168.0.35:8000/fapp/go_login_proc/",
+      type: "GET",
+      data: {
+        'id_userid': id_userid
+      },
+      dataType: 'json',
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      dataType: "text",
+      
+      success:function(data){
+        alert(data);
+      }
+    });
+  }
+</script>
+{% endblock %}
